@@ -1,0 +1,13 @@
+#cloud-config
+
+coreos:
+  etcd:
+    # https://discovery.etcd.io/new
+    discovery: https://discovery.etcd.io/f67f2954161ecfb666cc8501da47250d
+    addr: $public_ipv4:4001
+    peer-addr: $public_ipv4:7001
+  units:
+    - name: etcd.service
+      command: start
+    - name: fleet.service
+      command: start

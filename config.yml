@@ -1,0 +1,4 @@
+etcd: 
+  location: http://127.0.0.1:4001 #ip address
+  consistency: STRONG_CONSISTENCY
+workers: 2

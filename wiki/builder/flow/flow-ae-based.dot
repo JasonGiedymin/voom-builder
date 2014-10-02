@@ -1,0 +1,39 @@
+digraph AppEngineBased {
+  rankdir=LR;
+  size="80,50"
+  splines=true;
+  overlap=scalexy;
+  K="3"
+  repulsiveForce="2"
+  node [shape = doublecircle];
+  "AE-Datastore"
+  node [shape = folder];
+  "TaskQueue-JobsReady"
+  "TaskQueue-JobsDone"
+  node [shape = box];
+  "AE-UI"
+  "AE-TaskRecorder"
+  node [shape = circle];
+
+  "AE-UI" -> "AE-Datastore" [ headlabel = "writes & reads from"] // UI reads from the DS for updates on a task, and writes to the DS when tasks are to be done.
+  "AE-UI" -> "TaskQueue-JobsReady" [ taillabel = "writes to"] // UI submits tasks to queue
+  
+  "AE-TaskRecorder" -> "TaskQueue-JobsDone" [ label = "reads from"] // Reads from done to write to the DS
+  "AE-TaskRecorder" -> "AE-Datastore" [ taillabel = "writes to"] // TaskRecorder writes info to the datastore
+
+  "Worker1" -> "TaskQueue-JobsReady" [ taillabel = "watches queue" ];
+  "Worker1" -> "TaskQueue-JobsDone" [ label = "pubs to done" ];
+  "Worker2" -> "TaskQueue-JobsReady" [ taillabel = "watches queue" ];
+  "Worker2" -> "TaskQueue-JobsDone" [ label = "pubs to done" ];
+
+  // Use etcd to store info such as:
+  //  - taskqueue endpoint
+  //  - taskqueue credentials
+  //  - worker list
+  //  - stats
+  //  - status/heartbeat
+  "Worker1" -> "Worker1-Etcd" [ label = "uses cache" ];
+  "Worker2" -> "Worker2-Etcd" [ label = "uses cache" ];
+  "Worker1-Etcd" -> "Worker2-Etcd" [ headlabel = "syncs" ];
+  "Worker2-Etcd" -> "Worker1-Etcd" [ headlabel = "syncs" ];
+}

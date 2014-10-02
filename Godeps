@@ -1,0 +1,5 @@
+github.com/coreos/go-etcd/etcd
+github.com/thejerf/suture
+github.com/docker/libchan
+code.google.com/p/goauth2/oauth
+github.com/rcrowley/go-metrics

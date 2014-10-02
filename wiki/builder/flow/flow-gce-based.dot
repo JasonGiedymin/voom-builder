@@ -1,0 +1,25 @@
+digraph FlowDraft1 {
+  rankdir=LR;
+  size="80,50"
+  splines=true;
+  overlap=scalexy;
+  K="3"
+  repulsiveForce="2"
+  node [shape = doublecircle];
+  "AE-Datastore"
+  node [shape = folder];
+  "Topic-JobQueue"
+  "Topic-JobDone"
+  node [shape = box];
+  "AE-UI"
+  "Supervisor"
+  node [shape = circle];
+  "AE-UI" -> "AE-Datastore" [ label = "reads/writes"]
+  "Supervisor" -> "AE-Datastore" [ label="reads/writes"];
+  "Supervisor" -> "Topic-JobQueue" [ label = "pubs msg to queue"];
+  "Supervisor" -> "Topic-JobDone" [ label = "watches done" ];
+  "Worker1" -> "Topic-JobQueue" [ label = "watches queue" ];
+  "Worker2" -> "Topic-JobQueue" [ label = "watches queue" ];
+  "Worker1" -> "Topic-JobDone" [ label = "pubs to done" ];
+  "Worker2" -> "Topic-JobDone" [ label = "pubs to done" ];
+}
