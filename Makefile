@@ -9,9 +9,13 @@ WARN_COLOR=\033[33;01m
 BIN=go
 DEPS=$(go list -f '{{range .TestImports}}{{.}} {{end}}' ./...)
 COMMON_OPTS=
+PACKAGE_ROOT=$(GOPATH)/src/github.com/JasonGiedymin
 PACKAGE=github.com/JasonGiedymin/voom-builder
-PATH_SRC=$(GCE_SDK_GOPATH)/src/github.com/JasonGiedymin/voom-builder
-PATH_PKG=$(GCE_SDK_GOPATH)/pkg/*/github.com/JasonGiedymin/voom-builder
+# Note that this project will be a google compute project deployed
+# project which can use main line golang version and is not an
+# appengine deployed project which must be using golang 1.2.
+PATH_SRC=$(GOPATH)/src/github.com/JasonGiedymin/voom-builder
+PATH_PKG=$(GOPATH)/pkg/*/github.com/JasonGiedymin/voom-builder
 
 help:
 	@echo "$(OK_COLOR)-----------------------Commands:----------------------$(NO_COLOR)"
@@ -40,6 +44,7 @@ help:
 
 link:
 	@echo "$(OK_COLOR)==> Symlinking project to $(PATH_SRC) $(NO_COLOR)"
+#@mkdir $(PACKAGE_ROOT)
 	@ln -vFfsn $(shell pwd) $(PATH_SRC)
 
 # install-pkg:
@@ -52,6 +57,7 @@ install: link
 uninstall:
 	@echo "$(OK_COLOR)==> Uninstalling $(APP_NAME) $(PATH_PKG) $(NO_COLOR)"
 	@if [ -d $(PATH_PKG) ]; then rm -R $(PATH_PKG); fi;
+	@if [ -d $(PATH_SRC) ]; then rm -R $(PATH_SRC); fi;
 
 reinstall: uninstall install
 
@@ -77,7 +83,7 @@ lint:
 
 test:
 	@echo "$(OK_COLOR)==> Testing $(NO_COLOR)"
-	$(BIN) test -v $(COMMON_OPTS) ./registry/...
+	$(BIN) test -v $(COMMON_OPTS) ./...
 
 all: format lint test
 

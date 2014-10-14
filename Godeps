@@ -3,3 +3,5 @@ github.com/thejerf/suture
 github.com/docker/libchan
 code.google.com/p/goauth2/oauth
 github.com/rcrowley/go-metrics
+github.com/nu7hatch/gouuid
+gopkg.in/yaml.v2

@@ -1,4 +1,4 @@
-package worker
+package actors
 
 import (
     "github.com/coreos/go-etcd/etcd"

@@ -1,4 +1,11 @@
-etcd: 
+etcd:
   location: http://127.0.0.1:4001 #ip address
   consistency: STRONG_CONSISTENCY
-workers: 2
+  service_ttl: 1200 # ttl in seconds, which is 20 min
+  registration_interval: 60 #seconds
+  paths:
+    supervisor_config: "/app/config/supervisor"
+    services: "/app/services"
+    supervisors: "/app/services/supervisors"
+workers: 20
+worklimit: 50

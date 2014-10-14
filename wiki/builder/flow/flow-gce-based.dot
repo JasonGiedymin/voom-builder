@@ -1,25 +1,45 @@
 digraph FlowDraft1 {
   rankdir=LR;
-  size="80,50"
-  splines=true;
-  overlap=scalexy;
-  K="3"
-  repulsiveForce="2"
-  node [shape = doublecircle];
-  "AE-Datastore"
-  node [shape = folder];
-  "Topic-JobQueue"
-  "Topic-JobDone"
-  node [shape = box];
-  "AE-UI"
-  "Supervisor"
+  //size="80,50"
+  # splines=true;
+  # overlap=scalexy;
+  # K="3"
+  # repulsiveForce="2"
+  
   node [shape = circle];
-  "AE-UI" -> "AE-Datastore" [ label = "reads/writes"]
-  "Supervisor" -> "AE-Datastore" [ label="reads/writes"];
-  "Supervisor" -> "Topic-JobQueue" [ label = "pubs msg to queue"];
-  "Supervisor" -> "Topic-JobDone" [ label = "watches done" ];
-  "Worker1" -> "Topic-JobQueue" [ label = "watches queue" ];
-  "Worker2" -> "Topic-JobQueue" [ label = "watches queue" ];
-  "Worker1" -> "Topic-JobDone" [ label = "pubs to done" ];
-  "Worker2" -> "Topic-JobDone" [ label = "pubs to done" ];
+  "AE-UI" -> "AE-Datastore" [ label = "1\nreads/writes"]
+  "AE-UI" -> "Topic-JobQueue" [ label = "2\nsubmits new job to queue"]
+  {rank=same; "AE-UI", "AE-Datastore", "TopicSupervisor", "InfluxDB"}
+
+  "Supervisor" -> "etcd" [ label = "3\nregisters service with etcd" fillcolor="blue"];
+  "Supervisor" -> "etcd" [ label = "4\nreads config from etcd" fillcolor="blue"];
+  
+  "Supervisor" -> "Topic-JobQueue" [ label = "5\nreads from queue"];
+  "Supervisor" -> "InternalMetrics" [ label = "6\nrecords internal metrics" fillcolor="blue"];
+  "Supervisor" -> "Topic-JobDone" [ label = "10\nwrites to queue" ];
+  {rank=same; "Topic-JobQueue" "Topic-JobDone"}
+
+  "Supervisor" -> "Worker1" [ label = "7\nmanages worker" fillcolor="blue"]
+  "Supervisor" -> "Worker2" [ label = "7\nmanages worker" fillcolor="blue"]
+  "Supervisor" -> "Worker3" [ label = "7\nmanages worker" fillcolor="blue"]
+  {rank=same; "Worker1" "Worker2" "Worker3"}
+
+  "Supervisor" -> "JobQueue" [ label = "8\nsends work to job queue" fillcolor="blue"]
+
+  "Worker1" -> "JobQueue" [ label = "9\nreads work from queue" fillcolor="blue"]
+  "Worker2" -> "JobQueue" [ label = "9\nreads work from queue" fillcolor="blue"]
+  "Worker3" -> "JobQueue" [ label = "9\nreads work from queue" fillcolor="blue"]
+  "Worker1" -> "DoneQueue" [ label = "10\nsends work to done queue" fillcolor="blue"]
+  "Worker2" -> "DoneQueue" [ label = "10\nsends work to done queue" fillcolor="blue"]
+  "Worker3" -> "DoneQueue" [ label = "10\nsends work to done queue" fillcolor="blue"]
+  {rank=same; "JobQueue" "DoneQueue"}
+
+  "Supervisor" -> "DoneQueue" [ label = "11\nreads work from done queue" fillcolor="blue"]
+  "InternalMetrics" -> "InfluxDB"[ label = "12\nsends metrics to InfluxDB"]
+
+  "TopicSupervisor" -> "Topic-JobDone" [ label = "13\nmanages topic" ];
+  "TopicSupervisor" -> "AE-Datastore" [ label = "14\nwrites to db" ];
+
+  #"MetricsBackend" -> "InfluxDB" [ label = "gets key summary metrics from InfluxDB"]
+  #"MetricsBackend" -> "AE-Datastore" [ label = "stores key summary metrics to datastore"]
 }

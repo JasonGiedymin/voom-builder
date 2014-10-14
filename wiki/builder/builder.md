@@ -26,6 +26,11 @@ Then:
  - Install etcd (on a non dev machine must use go 1.2) `brew install etcd`
  - Install etcdctl (command line tool) `brew install etcdctl`
 
+ To run:
+ ```bash
+ $> etcd
+ ```
+
 ### Google OAUTH Libs
 
 ```bash

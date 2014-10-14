@@ -4,18 +4,27 @@ import (
     "errors"
     "io/ioutil"
 
-    "github.com/coreos/go-etcd/etcd"
-    "gopkg.in/yaml.v1"
+    "gopkg.in/yaml.v2"
 )
 
+type EtcdPaths struct {
+    SupervisorConfig string "supervisor_config"
+    Services         string "services"
+    Supervisors      string "supervisors"
+}
+
 type EtcdConfig struct {
-    Location    string
-    Consistency string
+    Location             string
+    Consistency          string
+    Service_ttl          uint64
+    RegistrationInterval int       "registration_interval"
+    Paths                EtcdPaths "paths"
 }
 
 type Config struct {
-    Etcd    EtcdConfig
-    Workers int
+    Etcd      EtcdConfig
+    Workers   int // number of workers to create
+    WorkLimit int "worklimit" // number of test work to create
 }
 
 func (c *Config) ParseYaml(data []byte) error {
@@ -41,15 +50,4 @@ func ReadConfig(file string) (*Config, error) {
     } else {
         return &config, nil
     }
-}
-
-func NewEtcdClient(configFile *Config) *etcd.Client {
-    client := etcd.NewClient([]string{configFile.Etcd.Location})
-
-    consistency := configFile.Etcd.Consistency
-    if consistency != "" {
-        client.SetConsistency(consistency)
-    }
-
-    return client
 }
