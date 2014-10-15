@@ -1,6 +1,7 @@
 package actors
 
 import (
+    "encoding/json"
     "fmt"
     "log"
     "os"
@@ -12,11 +13,38 @@ import (
 )
 
 const (
-    AbstractSupervisorFormat = "Supervisor - %s"
+    AbstractSupervisorFormat = "%s (success: %d, fail: %d, stats: %v)"
+    UuidFormat               = "Supervisor - %s - amuxbit.com" // used to generate the uuid
+    SupervisorNameFormat     = "(%s,%s)"                       // used as readable format, hostname and full uuid pair which are unique
 )
+
+type ServiceTag struct {
+    Hostname  string
+    Uuid      string
+    Workers   int
+    Name      string
+    ActorType string
+}
+
+func (s *ServiceTag) Json() string {
+    data, err := json.Marshal(s)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    log.Printf("ServiceTag: %s", string(data))
+
+    return string(data)
+}
+
+func (s ServiceTag) String() string {
+    return fmt.Sprintf(SupervisorNameFormat, s.Hostname, s.Uuid)
+}
 
 type Supervisor interface {
     Name() string
+    ActorType() string
     ServiceTag() ServiceTag
     LogServiceFailure(failure string)
     Log(doing string, v ...interface{})
@@ -36,6 +64,7 @@ type AbstractSupervisor struct {
     supervisors    map[string]Supervisor
     supervisorUUID string
     baseStats      *stats.SupervisorStats
+    actorType      string
 }
 
 func (s *AbstractSupervisor) Name() string {
@@ -46,10 +75,21 @@ func (s *AbstractSupervisor) Name() string {
     }
 }
 
+func (s *AbstractSupervisor) ActorType() string {
+    if s.actorType == "" {
+        return "AbstractSupervisor"
+    } else {
+        return s.actorType
+    }
+}
+
 func (s *AbstractSupervisor) Log(doing string, v ...interface{}) {
     entityName := fmt.Sprintf(
         AbstractSupervisorFormat,
         s.Name(),
+        s.baseStats.SuccessCount(),
+        s.baseStats.Errors(),
+        s.baseStats.Snapshot().RateMean(),
     )
     log.Printf(common.LogEntryf(entityName, doing, v...))
 }
@@ -100,6 +140,8 @@ func (s *AbstractSupervisor) ServiceTag() ServiceTag {
         hostname,
         s.supervisorUUID,
         len(s.workers),
+        s.Name(),
+        s.ActorType(),
     }
 }
 

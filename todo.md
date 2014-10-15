@@ -48,17 +48,25 @@ Legend:
  - [x] enable registration of services with etcd via worker
  - [x] set etcd service registration ttl to 20min
  - [x] stats in abstract supervisor
- - [ ] create generic worker work stream to let supervisor know generic work is done
+
+
+ ### v0.1.2
+
+ - [x] create generic worker work stream to let supervisor know generic work is done
        this will also tie the worker to the supervisor
- - [ ] easier to use New constructor for abstract supervisor
- - [ ] create SupportSupervisor
- - [ ] collapse supportsupervisor and supervisor (uuid, service tag, mixin)
- - [ ] create worker to continually poll for registration
+ - [x] easier to use New constructor for abstract supervisor
+ - [x] create SupportSupervisor
+ - [x] collapse supportsupervisor and supervisor (uuid, service tag, mixin)
+ - [x] create worker to continually poll for registration
+ - [x] Supervisor settings from etcd
+
+
+ ### v0.1.3
+
  - [ ] logging to a service where admin can see it?
        => logging service? Metrics DB? Would need live access to it
  - [ ] http://dave.cheney.net/2014/09/28/using-build-to-switch-between-debug-and-release
  - [ ] rename stats -> metrics
- - [ ] Supervisor settings from etcd
  - [ ] Supervisor write to TaskQueues
  - [ ] Supervisor write stats to InfluxDB
  - [ ] handle git work

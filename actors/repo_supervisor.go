@@ -2,14 +2,14 @@ package actors
 
 import (
     // "github.com/JasonGiedymin/voom-builder/clients"
-    "github.com/JasonGiedymin/voom-builder/common"
+    // "github.com/JasonGiedymin/voom-builder/common"
     // "github.com/JasonGiedymin/voom-builder/config"
     "github.com/JasonGiedymin/voom-builder/stats"
 
-    "encoding/json"
+    // "encoding/json"
     "fmt"
     "log"
-    "os"
+    // "os"
     "sync"
 
     "github.com/nu7hatch/gouuid"
@@ -17,32 +17,8 @@ import (
 )
 
 const (
-    UuidFormat           = "Supervisor - %s - amuxbit.com" // used to generate the uuid
-    SupervisorNameFormat = "(%s,%s)"                       // used as readable format, hostname and full uuid pair which are unique
-    SupervisorFormat     = "%s (success: %d, fail: %d, stats: %v)"
+    SupervisorFormat = "%s (success: %d, fail: %d, stats: %v)"
 )
-
-type ServiceTag struct {
-    Hostname string
-    Uuid     string
-    Workers  int
-}
-
-func (s *ServiceTag) Json() string {
-    data, err := json.Marshal(s)
-
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    log.Printf("Json data: %s", string(data))
-
-    return string(data)
-}
-
-func (s ServiceTag) String() string {
-    return fmt.Sprintf(SupervisorNameFormat, s.Hostname, s.Uuid)
-}
 
 type SupervisorSpec struct {
     BufferLimit int
@@ -79,6 +55,7 @@ func NewSupervisor(supervisorSpec SupervisorSpec) *RepoSupervisor {
             map[string]Supervisor{},
             supervisorUUID.String(),
             stats.NewSupervisorStats(),
+            "RepoSupervisor",
         },
         make(chan string, supervisorSpec.BufferLimit),
         make(chan string, supervisorSpec.BufferLimit),
@@ -92,48 +69,22 @@ func (s *RepoSupervisor) Name() string {
     return "Supervisor (Repo)"
 }
 
-func (s *RepoSupervisor) ServiceTag() ServiceTag {
-
-    hostname, err := os.Hostname()
-    if err != nil {
-        log.Fatalf("Error: Could not get hostname! - %v", err)
-        // fatal will exit here
-    }
-
-    return ServiceTag{
-        hostname,
-        s.supervisorUUID,
-        len(s.workers),
-    }
-}
-
-// Upon failure, this method will be called
-// func (s *RepoSupervisor) LogServiceFailure(failure string) {
-//     s.stats.Withdraw(1, &common.WorkError{failure})
-//     log.Println(failure)
+// func (s *RepoSupervisor) Log(doing string, v ...interface{}) {
+//     entityName := fmt.Sprintf(
+//         SupervisorFormat,
+//         s.Name(),
+//         s.baseStats.SuccessCount(),
+//         s.baseStats.Errors(),
+//         s.baseStats.Snapshot().RateMean(),
+//     )
+//     log.Printf(common.LogEntryf(entityName, doing, v...))
 // }
-
-func (s *RepoSupervisor) Log(doing string, v ...interface{}) {
-    entityName := fmt.Sprintf(
-        SupervisorFormat,
-        s.Name(),
-        s.baseStats.SuccessCount(),
-        s.baseStats.Errors(),
-        s.baseStats.Snapshot().RateMean(),
-    )
-    log.Printf(common.LogEntryf(entityName, doing, v...))
-}
-
-func (s *RepoSupervisor) LogFatal(doing string, v ...interface{}) {
-    entityName := fmt.Sprintf(SupervisorFormat, s.ref.Name)
-    log.Fatalf(common.LogEntryf(entityName, doing, v...))
-}
 
 func (s *RepoSupervisor) Serve() {
     var wg sync.WaitGroup
     wg.Add(1)
 
-    fmt.Println("**** (RS) Serving")
+    // fmt.Println("**** (RS) Serving")
     func() { // don't put in goroutine or else it will exit
         for {
             select {
@@ -159,13 +110,3 @@ func (s *RepoSupervisor) Work(work string) {
     s.JobsPending <- work
     // s.baseStats.Reserve(1)
 }
-
-// func (s *RepoSupervisor) AddSupervisor(supervisor Supervisor) {
-//     s.ref.Add(supervisor)
-
-//     if _, ok := s.supervisors[supervisor.Name()]; ok {
-//         s.LogFatal("Supervisor '%s' cannot be added twice for supervision!", supervisor.Name)
-//     } else {
-//         s.supervisors[supervisor.Name()] = supervisor
-//     }
-// }

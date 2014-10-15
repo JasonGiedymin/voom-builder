@@ -5,7 +5,7 @@ import (
 
     "fmt"
     "log"
-    "os"
+    // "os"
     "sync"
     // "time"
 
@@ -28,9 +28,9 @@ func (s *SupportSupervisor) Serve() {
     var wg sync.WaitGroup
     wg.Add(1)
 
-    fmt.Println("**** (SS) Serving")
+    // fmt.Println("**** (SS) Serving")
 
-    func() { // don't put in goroutine or else it will exit
+    go func() { // don't put in goroutine or else it will exit
         for {
             select {
             case doing := <-s.JobsDone:
@@ -44,7 +44,6 @@ func (s *SupportSupervisor) Serve() {
 }
 
 func (s *SupportSupervisor) Run() {
-    fmt.Println("Running")
     go s.ref.ServeBackground()
     // s.ref.Serve()
     go s.Serve()
@@ -76,6 +75,7 @@ func NewSupportSupervisor(supervisorSpec SupervisorSpec) *SupportSupervisor {
             map[string]Supervisor{},
             supervisorUUID.String(),
             stats.NewSupervisorStats(),
+            "SupportSupervisor",
         },
         make(chan string, supervisorSpec.BufferLimit),
     }
@@ -84,38 +84,3 @@ func NewSupportSupervisor(supervisorSpec SupervisorSpec) *SupportSupervisor {
 
     return &supervisor
 }
-
-func (s *SupportSupervisor) ServiceTag() ServiceTag {
-
-    hostname, err := os.Hostname()
-    if err != nil {
-        log.Fatalf("Error: Could not get hostname! - %v", err)
-        // fatal will exit here
-    }
-
-    return ServiceTag{
-        hostname,
-        s.supervisorUUID,
-        len(s.workers),
-    }
-}
-
-// func (s *SupportSupervisor) Add(worker Worker) {
-//     s.ref.Add(worker)
-
-//     if _, ok := s.workers[worker.Name()]; ok {
-//         s.LogFatal("Worker '%s' cannot be added twice for supervision!", worker.Name())
-//     } else {
-//         s.workers[worker.Name()] = worker
-//     }
-// }
-
-// func (s *SupportSupervisor) AddSupervisor(supervisor Supervisor) {
-//     s.ref.Add(supervisor)
-
-//     if _, ok := s.supervisors[supervisor.Name()]; ok {
-//         s.LogFatal("Supervisor '%s' cannot be added twice for supervision!", supervisor.Name)
-//     } else {
-//         s.supervisors[supervisor.Name()] = supervisor
-//     }
-// }

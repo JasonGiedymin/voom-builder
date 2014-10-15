@@ -11,7 +11,7 @@ digraph FlowDraft1 {
   "AE-UI" -> "Topic-JobQueue" [ label = "2\nsubmits new job to queue"]
   {rank=same; "AE-UI", "AE-Datastore", "TopicSupervisor", "InfluxDB"}
 
-  "Supervisor" -> "etcd" [ label = "3\nregisters service with etcd" fillcolor="blue"];
+  "Supervisor" -> "etcd" [ label = "3\nregisters service with etcd on interval" fillcolor="blue"];
   "Supervisor" -> "etcd" [ label = "4\nreads config from etcd" fillcolor="blue"];
   
   "Supervisor" -> "Topic-JobQueue" [ label = "5\nreads from queue"];

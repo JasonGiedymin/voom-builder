@@ -46,25 +46,30 @@ func NewRegistrationWorker(spec RegistrationWorkerSpec) *RegistrationWorker {
     }
 }
 
-func (w RegistrationWorker) Log(v ...interface{}) {
-    doing := "register service with %s"
+func (w RegistrationWorker) Log(msg string) {
     entityName := fmt.Sprintf("RegistrationWorker - %s", w.Name())
-    log.Printf(common.LogEntryf(entityName, doing, "*****************etcd"))
+    log.Printf(common.LogEntry(entityName, msg))
+}
+
+func (w RegistrationWorker) Logf(msg string, v ...interface{}) {
+    entityName := fmt.Sprintf("RegistrationWorker - %s", w.Name())
+    log.Printf(common.LogEntryf(entityName, msg, v))
 }
 
 func (w *RegistrationWorker) Work() {
-    // time.Sleep(time.Duration(w.interval) * time.Second)
-    w.Log("*** registration! ***")
-    // w.Log("finished %s", doing)
-    w.jobsDone <- "registered service"
+    if _, err := w.etcdClient.Set(w.data); err != nil {
+        w.Logf("Error occured: %s", err.Error())
+    } else {
+        w.jobsDone <- "registered service with etcd"
+    }
 }
 
 func (w *RegistrationWorker) Serve() {
-    w.Log("********************************** test")
-    //w.etcdClient.Set(w.data)
+    w.Work() // immediately work once
+
     func() {
         for {
-            time.Sleep(time.Millisecond * 5000)
+            time.Sleep(time.Second * time.Duration(w.interval))
             w.Work()
         }
     }()
